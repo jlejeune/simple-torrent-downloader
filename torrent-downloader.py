@@ -5,6 +5,7 @@
 # TODO: show all downlable tv shows in a beautiful tab and select each one you want to download
 # TODO: use classes to define providers
 # TODO: move utils functions in an external module
+# TODO: define filters outside
 
 import requests
 import argparse
@@ -113,9 +114,9 @@ def download_file(url):
         return TEMP_DIR + filename
 
 
-def upload_torrent_to_putio(token, filename):
+def upload_torrent_to_putio(token, filename, parent_id):
     client = putiopy.Client(token)
-    client.Transfer.add_torrent(filename, parent_id=424351456)
+    client.Transfer.add_torrent(filename, parent_id)
     os.remove(filename)
 
 
@@ -124,6 +125,10 @@ def define_options():
     parser.add_argument('--all', help='no filter', action='store_true')
     parser.add_argument('--quizz', help='interactive mode', action='store_true')
     parser.add_argument('--dry-run', help='test filters', action='store_true')
+    parser.add_argument('--parent-id',
+                        dest='parent_id',
+                        help='destination putio folder parent id',
+                        default=424351456)
     parser.add_argument('--config-file',
                         dest='config_file',
                         help="configuration file",
@@ -183,7 +188,7 @@ def main():
                     continue
             filename = download_file(values['torrent_link'])
             if filename:
-                upload_torrent_to_putio(options['Settings.oauth-token'], filename)
+                upload_torrent_to_putio(options['Settings.oauth-token'], filename, options['parent_id'])
                 print("%s (%s) sent to put.io" % (values['title'], values['size']))
         else:
             print("%s (%s) will be downloaded" % (values['title'], values['size']))
